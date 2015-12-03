@@ -70,10 +70,14 @@ static int LinearOperator_daprod(char *transa, integer *m, integer *n,
 }
 
 JNIEXPORT void JNICALL Java_JPropack_svds(JNIEnv *env, jobject thisObj,
-    jobject opObj, jint neig) {
+    jobject opObj, jint neig, jdoubleArray outU, jdoubleArray outS,
+    jdoubleArray outV) {
+  /** check assumptions **/
   assert(sizeof(jint) == sizeof(int));
   assert(sizeof(integer) == sizeof(int));
   assert(sizeof(doublereal) == sizeof(double));
+
+  /** prepare to call PROPACK **/
   jclass opClass = (*env)->GetObjectClass(env, opObj);
   jmethodID numRowsFcn = (*env)->GetMethodID(env, opClass, "numRows", "()I");
   jmethodID numColsFcn = (*env)->GetMethodID(env, opClass, "numCols", "()I");
@@ -109,12 +113,26 @@ JNIEXPORT void JNICALL Java_JPropack_svds(JNIEnv *env, jobject thisObj,
   double doption[3] = { delta, eta, anorm };
   int ioption[2] = { 0, 1 };
   int info = -1;
-  dlansvd_("y", "y", &m, &n, &neig, &kmax, &LinearOperator_daprod, U, &ldu, S,
+
+  /** call PROPACK **/
+  dlansvd_("Y", "Y", &m, &n, &neig, &kmax, &LinearOperator_daprod, U, &ldu, S,
       bnd, V, &ldv, &rtol, work, &lwork, iwork, &liwork, doption, ioption,
       &info, NULL, (void*)&ctx, (ftnlen)1, (ftnlen)1);
-  for(int idx=0; idx < neig; ++idx) {
-    printf("%d: %f\n", idx, S[idx]);
-  }
-  printf("info=%d\n", info);
+  fprintf(stderr, "JPropack: info=%d\n", info);
   ENSURE(info == 0); /* TODO */
+
+  /** populate result **/
+  assert((*env)->GetArrayLength(env, outU) == m * neig);
+  (*env)->SetDoubleArrayRegion(env, outU, 0, m * neig, U);
+  assert((*env)->GetArrayLength(env, outS) == neig);
+  (*env)->SetDoubleArrayRegion(env, outS, 0, neig, S);
+  assert((*env)->GetArrayLength(env, outV) == n * neig);
+  (*env)->SetDoubleArrayRegion(env, outV, 0, n * neig, V);
+
+  /** cleanup **/
+  free(iwork);
+  free(work);
+  free(V);
+  free(S);
+  free(U);
 }
