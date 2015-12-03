@@ -83,7 +83,7 @@ JNIEXPORT void JNICALL Java_JPropack_svds(JNIEnv *env, jobject thisObj,
   int n = (*env)->CallIntMethod(env, opObj, numColsFcn);
   ENSURE(m > 0 && n > 0);
   LinearOperator ctx = { env, opObj, opClass, applyFcn };
-  int kmax = neig; /* maximum dimension of Krylov subspace */
+  int kmax = min(m, n); /* TODO: maximum dimension of Krylov subspace */
   int ldu = m;
   double *U = malloc(sizeof(double) * ldu * (kmax + 1));
   /* zero out U to indicate we want a random starting vector */
@@ -112,5 +112,9 @@ JNIEXPORT void JNICALL Java_JPropack_svds(JNIEnv *env, jobject thisObj,
   dlansvd_("y", "y", &m, &n, &neig, &kmax, &LinearOperator_daprod, U, &ldu, S,
       bnd, V, &ldv, &rtol, work, &lwork, iwork, &liwork, doption, ioption,
       &info, NULL, (void*)&ctx, (ftnlen)1, (ftnlen)1);
-  printf("survived %d\n", info);
+  for(int idx=0; idx < neig; ++idx) {
+    printf("%d: %f\n", idx, S[idx]);
+  }
+  printf("info=%d\n", info);
+  ENSURE(info == 0); /* TODO */
 }
