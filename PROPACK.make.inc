@@ -26,4 +26,4 @@ RANLIB = ranlib
 MGS = mgs.pentium
 
 #  Platform postfix to use in naming executables and library files
-PLAT = omp
+PLAT = f2c_omp

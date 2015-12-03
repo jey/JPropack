@@ -14,7 +14,7 @@ JPropack.h: JPropack.class
 	javah JPropack
 
 libjpropack.so: jpropack.c
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ $^ -L. -ldpropack_omp -ldlapack_util_omp -lopenblas -lgfortran
+	$(CC) $(CFLAGS) -fPIC -shared -o $@ $^ -L. -ldpropack_f2c_omp -ldlapack_util_f2c_omp -lopenblas -lgfortran
 
 jpropack.c: JPropack.h
 
