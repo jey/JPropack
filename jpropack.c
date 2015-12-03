@@ -1,4 +1,5 @@
 /* NOTE: assumes f2c calling convention for now */
+#include <jni.h>
 #include <assert.h>
 #include <ctype.h>
 #include <float.h>
@@ -6,9 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <f2c.h>
-#include <jni.h>
 #include "JPropack.h"
+
+/* include last because it defines weird macros */
+#include <f2c.h>
 
 #ifdef __GNUC__
 #define UNLIKELY(x) __builtin_expect((x), 0)
