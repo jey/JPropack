@@ -53,12 +53,19 @@ static int LinearOperator_daprod(char *transa, integer *m, integer *n,
   JNIEnv *env = ctx->env;
   assert(tolower(*transa) == 't' || tolower(*transa) == 'n');
   jboolean istrans = tolower(*transa) == 't';
+  int xlen = istrans ? *m : *n;
+  int ylen = istrans ? *n : *m;
   /* TODO: reuse arrays, error checking */
-  jdoubleArray jx = (*env)->NewDoubleArray(env, istrans ? *m : *n);
-  jdoubleArray jy = (*env)->NewDoubleArray(env, istrans ? *n : *m);
-  (*env)->SetDoubleArrayRegion(env, jx, 0, istrans ? *m : *n, x);
+  jdoubleArray jx = (*env)->NewDoubleArray(env, xlen);
+  jdoubleArray jy = (*env)->NewDoubleArray(env, ylen);
+  ENSURE(jx && jy);
+  (*env)->SetDoubleArrayRegion(env, jx, 0, xlen, x);
   (*env)->CallVoidMethod(env, ctx->opObj, ctx->applyFcn, istrans, jx, jy);
   ENSURE(!(*env)->ExceptionOccurred(env)); /* TODO */
+  assert((*env)->GetArrayLength(env, jy) == ylen);
+  double *jyarr = (jdouble*)(*env)->GetPrimitiveArrayCritical(env, jy, 0);
+  memcpy(y, jyarr, sizeof(double) * ylen);
+  (*env)->ReleasePrimitiveArrayCritical(env, jy, jyarr, 0);
   return 0;
 }
 
