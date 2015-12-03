@@ -1,4 +1,5 @@
 CFLAGS = -std=gnu99 -fopenmp -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+#CFLAGS += -DNDEBUG
 
 default: libjpropack.so JPropack.class LinearOperator.class Test.class
 	java -enableassertions -Djava.library.path=. Test

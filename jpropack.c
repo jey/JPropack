@@ -10,6 +10,23 @@
 #include <jni.h>
 #include "JPropack.h"
 
+#ifdef __GNUC__
+#define UNLIKELY(x) __builtin_expect((x), 0)
+#else
+#define UNLIKELY(x) (x)
+#endif
+
+#ifdef NDEBUG
+#define ENSURE(x) \
+  do if(!UNLIKELY(x)) { \
+    fprintf(stderr, "%s:%d: FATAL: invariant failed: " #x "\n", \
+        __FILE__, __LINE__); \
+    abort(); \
+  } while(0)
+#else
+#define ENSURE(x) assert(x)
+#endif
+
 typedef int (*daprod_t)(char *transa, integer *m, integer *n, 
   doublereal *x, doublereal *y, doublereal *dparm, integer *iparm, 
   ftnlen transa_len);
@@ -39,6 +56,7 @@ static int LinearOperator_daprod(char *transa, integer *m, integer *n,
   jdoubleArray jy = (*env)->NewDoubleArray(env, istrans ? *n : *m);
   (*env)->SetDoubleArrayRegion(env, jx, 0, istrans ? *m : *n, x);
   (*env)->CallVoidMethod(env, ctx->opObj, ctx->applyFcn, istrans, jx, jy);
+  ENSURE(!(*env)->ExceptionOccurred(env)); /* TODO */
   return 0;
 }
 
@@ -51,10 +69,10 @@ JNIEXPORT void JNICALL Java_JPropack_svds(JNIEnv *env, jobject thisObj,
   jmethodID numRowsFcn = (*env)->GetMethodID(env, opClass, "numRows", "()I");
   jmethodID numColsFcn = (*env)->GetMethodID(env, opClass, "numCols", "()I");
   jmethodID applyFcn = (*env)->GetMethodID(env, opClass, "apply", "(Z[D[D)V");
-  assert(numRowsFcn && numColsFcn);
+  ENSURE(numRowsFcn && numColsFcn);
   int m = (*env)->CallIntMethod(env, opObj, numRowsFcn);
   int n = (*env)->CallIntMethod(env, opObj, numColsFcn);
-  assert(m > 0 && n > 0);
+  ENSURE(m > 0 && n > 0);
   LinearOperator ctx = { env, opObj, opClass, applyFcn };
   int kmax = neig; /* maximum dimension of Krylov subspace */
   int ldu = m;

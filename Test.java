@@ -12,6 +12,7 @@ class TestOp implements LinearOperator {
       assert x.length == numRows();
       assert y.length == numCols();
       System.out.println("wee-transpose!");
+      //throw new RuntimeException("oink");
     } else {
       assert x.length == numCols();
       assert y.length == numRows();
