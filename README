@@ -1,0 +1,3 @@
+Currently this assumes you've done something like this in your environment:
+
+export CLASSPATH=.:$SPARK_HOME/lib/spark-assembly-*.jar

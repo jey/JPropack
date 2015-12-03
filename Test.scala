@@ -1,3 +1,5 @@
+import breeze.linalg._
+
 class TestOp extends LinearOperator {
   def numRows = 10
   def numCols = 20
