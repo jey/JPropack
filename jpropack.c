@@ -20,7 +20,7 @@
 
 #ifdef NDEBUG
 #define ENSURE(x) \
-  do if(!UNLIKELY(x)) { \
+  do if(UNLIKELY(!(x))) { \
     fprintf(stderr, "%s:%d: FATAL: invariant failed: " #x "\n", \
         __FILE__, __LINE__); \
     abort(); \
